@@ -1,0 +1,231 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>用正则表达式判断一个二进制数能否被3整除 | 布洛谷</title>
+<link rel="shortcut icon" href="https://taoliq.github.io/favicon.ico?v=1690634862807">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://taoliq.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="用正则表达式判断一个二进制数能否被3整除 | 布洛谷 - Atom Feed" href="https://taoliq.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="问题描述如标题，很简洁：用一个正则表达式判断一个二进制数能否被3整除
+比如：
+000 		True
+11		True
+1001	True
+1011 	False
+
+解决思路也很简单：首先用有限状态机（FSM）实现对能否被3整除的判断，然后将..." />
+    <meta name="keywords" content="算法与数据结构" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://taoliq.github.io">
+  <img class="avatar" src="https://taoliq.github.io/images/avatar.png?v=1690634862807" alt="">
+  </a>
+  <h1 class="site-title">
+    布洛谷
+  </h1>
+  <p class="site-description">
+    一点记录，一点分享
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/taoliq" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+        <a href="https://www.zhihu.com/people/tao-banana" target="_blank">
+          <i class="ri-zhihu-line"></i>
+        </a>
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              用正则表达式判断一个二进制数能否被3整除
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-09-07
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://taoliq.github.io/tag/NJro8Uq-aL/" class="post-tag">
+                  # 算法与数据结构
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>问题描述如标题，很简洁：用一个正则表达式判断一个二进制数能否被3整除</p>
+<p>比如：<br>
+000 		True<br>
+11		True<br>
+1001	True<br>
+1011 	False</p>
+<!-- more -->
+<p>解决思路也很简单：首先用有限状态机（FSM）实现对能否被3整除的判断，然后将其转换成正则</p>
+<p>有限状态机图如下，分析过程摘自matrix67，并在此感谢一下神犇</p>
+<figure data-type="image" tabindex="1"><img src="http://www.matrix67.com/blogimage/200812011.gif" alt="" loading="lazy"></figure>
+<blockquote>
+<p>注意到，一个二进制数后面加一个“0”相当于该数乘以2，一个二进制数后面加一个“1”相当于该数乘2加1。设定三个状态，分别叫做0、1和2，它们表示当前的数除以3所得的余数。如果对于某个i和j，有i*2≡j (mod 3)，就加一条路径i→j，路径上标一个字符“0”；如果i*2+1≡j (mod 3)，则在路径i→j上标记“1”。状态0既是我们的初始状态，也是我们的最终状态。我们的自动机就做好了。现在，假如二进制数10010走进来了。从状态0出发，机器首先读到一个“1”，于是当前位置挪到状态1，表明目前该数模3余1；然后，系统读了一个“0”，我们紧跟着走到状态2，表明二进制数“10”被3除余2；下一步，我们回到状态1，表明“100”除以3余1；再往后，我们得知“1001”能被3整除。最后呢，我们读到一个0，“1001”的两倍当然还是能被3整除，我们依旧停留在原位。我们得到结论：二进制数10010能被3整除。<br>
+有限状态自动机是可以转化为正则表达式的。上面的这个自动机转化起来非常容易。我们可以先试着用自然语言叙述一下。首先，每个二进制数第一位必然为“1”。到达状态1后，我们可以随意地、任意多次地在状态1周围绕圈圈，最终回到状态1。临近末尾，我们再读到一个“1”返回状态0，这之后随便读多少个“0”都可以了。现在问题分解为：我们又如何用正则表达式表述“从状态1出发随意地走最终回到状态1”呢？在本例中，这是很好描述的：它可以是字符串“1000..001”和“0111..110”的任意组合。把这些东西用正则表达式写出来，就是我们刚才那个神秘的式子：1((10*1)|(01*0))*10* 。</p>
+</blockquote>
+<p>最后再加上位置标识符，<code>^1((10*1)|(01*0))*10*$</code></p>
+<p>从matrix67的分析自然语言可以理解正则，但是从有限状态机转换到正则的通式通法还不会。</p>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="http://blog.2baxb.me/archives/588">使用正则表达式判断二进制数字是否能被3整除</a></p>
+<p><a href="http://www.matrix67.com/blog/archives/1089">趣题：用正则表达式判断一个二进制数是否能被3整除</a></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99">参考资料</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://taoliq.github.io/post/新的开始/">
+              <h3 class="post-title">
+                新的开始
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'ab1c637bba57ea5c7624',
+    clientSecret: '7b04c62cdc056d62008182164c1dcd2dc99de2d0',
+    repo: 'taoliq.github.io',
+    owner: 'taoliq',
+    admin: ['taoliq'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  给时光以生命
+  <a class="rss" href="https://taoliq.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

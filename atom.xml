@@ -1,0 +1,650 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://taoliq.github.io</id>
+    <title>布洛谷</title>
+    <updated>2023-07-29T12:47:45.403Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://taoliq.github.io"/>
+    <link rel="self" href="https://taoliq.github.io/atom.xml"/>
+    <subtitle>一点记录，一点分享</subtitle>
+    <logo>https://taoliq.github.io/images/avatar.png</logo>
+    <icon>https://taoliq.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2023, 布洛谷</rights>
+    <entry>
+        <title type="html"><![CDATA[浅谈 String 类型的历史变迁]]></title>
+        <id>https://taoliq.github.io/post/string-lei-xing-de-li-shi-bian-qian/</id>
+        <link href="https://taoliq.github.io/post/string-lei-xing-de-li-shi-bian-qian/">
+        </link>
+        <updated>2023-06-02T14:09:11.000Z</updated>
+        <summary type="html"><![CDATA[<p>在很多编程语言中，经常用 String 类型来表示字符串，用 Char 来表示字符类型；在以往的观念中，String 与 Char 数组 (字符数组) 是等价的，但随着计算机的发展以及编程语言的演进，这两者之间好像出现了一些细微的不同。这篇文章将向读者展示，Char 数组与 String 是如何从统一走向分离的。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>在很多编程语言中，经常用 String 类型来表示字符串，用 Char 来表示字符类型；在以往的观念中，String 与 Char 数组 (字符数组) 是等价的，但随着计算机的发展以及编程语言的演进，这两者之间好像出现了一些细微的不同。这篇文章将向读者展示，Char 数组与 String 是如何从统一走向分离的。</p>
+<!-- more -->
+<h1 id="从数数开始">从数数开始</h1>
+<p>先从一个简单的 Python 程序讲起，返回一个字符串的长度。</p>
+<p>输入数据如下：</p>
+<pre><code>hello world
+你好，世界
+café
+🙏🙏🏽🙏🏿
+👩‍👩‍👧‍👦
+</code></pre>
+<p>在笔者的环境中结果如下：</p>
+<pre><code>Python 3.8.0 (default, Dec  9 2021, 17:53:27)
+[GCC 8.4.0] on linux
+Type &quot;help&quot;, &quot;copyright&quot;, &quot;credits&quot; or &quot;license&quot; for more information.
+&gt;&gt;&gt; len(&quot;hello world&quot;)
+11
+&gt;&gt;&gt; len(&quot;你好，世界&quot;)
+5
+&gt;&gt;&gt; len(&quot;café&quot;)
+5
+&gt;&gt;&gt; len(&quot;🙏🙏🏽🙏🏿&quot;)
+5
+&gt;&gt;&gt; len(&quot;👩‍👩‍👧‍👦&quot;)
+7
+</code></pre>
+<p>按理说，<code>len()</code> 函数应该返回字符串包含的 “字符” 的个数，但是这里的 “字符” 与直觉上好像有一些出入。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>直觉上的长度</th>
+<th>py3 输出的长度</th>
+<th>相等与否</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hello world</td>
+<td>11</td>
+<td>11</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>你好，世界</td>
+<td>5</td>
+<td>5</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>café</td>
+<td>4</td>
+<td>5</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>🙏🙏🏽🙏🏿</td>
+<td>3</td>
+<td>5</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>👩‍👩‍👧‍👦</td>
+<td>1</td>
+<td>7</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p>发生什么事了📢📢📢</p>
+<p>到底是谁错了？人还是机器？</p>
+<blockquote>
+<p>机器永远是对的。——jyy</p>
+</blockquote>
+<p>py3 输出的长度表示的是什么意思呢？</p>
+<figure data-type="image" tabindex="1"><img src="https://taoliq.github.io/post-images/1685715591978.png" alt="" loading="lazy"></figure>
+<h1 id="字符类型">字符类型</h1>
+<p>为了回答前面的问题，我们需要了解一下字符类型，虽然在 Python 中没有独立的字符类型，但其他大多数编程语言中都有单独的字符类型，如 C#，Java，Rust，Julia 中的 Char，以及 Go 中的 rune 和 Swift 中的 Character；虽然都叫字符类型，但是由于一些原因，这些字符类型的实现并不一样，有的是 16 位有的是 32 位 (其原因会在后面说明) 。在比较现代的编程语言中，字符类型的实现多数为 32 位，我们就从 32 位字符类型开始讲起吧。</p>
+<p>注： 在后文中出现的 Char 或者是 Char 类型，均指代编程语言中的字符类型，由于 “字符” 一词存在歧义，故选择了 Char 这个词来指代。至于“字符”一词的歧义，也会在后文中展开说明。</p>
+<p>32 位字符类型基本都是用来表示 Unicode Scalar Value (Unicode 标量值)， 或者说 Unicode 中的 Code Point。</p>
+<p>首先， Unicode 是什么呢？——Unicode 标准 (The Unicode Standard) [1]，简单说就是一个 “字符表”，一种规则，给每个字符一个编号。</p>
+<p>可以类比于 ASCII 码，大写字母 “A” 的编号是十进制的 65。</p>
+<p>下方的截图来自于 Unicode 官网 [2]，可以看到图中列出了几个字符，每个字符的下方会有一个编号 (如 U+0669，十六进制) ，这个编号就称为 Code Point。</p>
+<figure data-type="image" tabindex="2"><img src="https://taoliq.github.io/post-images/1685715616023.png" alt="" loading="lazy"></figure>
+<p>目前 Unicode Code Point 编号达到了 21 位 (二进制) ，所以用 32 位来存储是完全够用的。</p>
+<p>32 位字符类型表示的就是这个编号，比如上图中的 U+0669。</p>
+<h1 id="char-字符">Char == 字符?</h1>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>直觉上的长度</th>
+<th>py3 输出的长度</th>
+<th>相等与否</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hello world</td>
+<td>11</td>
+<td>11</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>你好，世界</td>
+<td>5</td>
+<td>5</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>café</td>
+<td>4</td>
+<td>5</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>🙏🙏🏽🙏🏿</td>
+<td>3</td>
+<td>5</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>👩‍👩‍👧‍👦</td>
+<td>1</td>
+<td>7</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p>回到前面字符串长度的表格，现在我们可以回答之前提出的问题了，py3 输出的字符串长度，其含义是字符串中 Unicode Code Point 的个数 (感兴趣的读者可以自己验证，这里就忽略了) 。</p>
+<p>再来看左侧的 “直觉上的长度”，为了更准确地讲解，我们引入一个新概念，用户视角的字符 (User-perceived character) ，指符合人类直觉的字符，因为是从直觉的角度出发，没有明确的定义，比如一个“块块”，一个 emoji 表情 ⛄。“直觉上的长度” 含义就是 用户视角的字符 的个数。</p>
+<p>从这个表格中可以看到，有一些 “字符”，在人类视角是一个 (一个 用户视角的字符) ，但是在计算机的角度是由多个 Unicode Code Point 组成。</p>
+<p>很显然，一个用户视角的字符，可能需要多个 Unicode 字符 (Code Point) 来表示。比如这个表示家庭的 emoji，👨‍👩‍👧‍👦，实际上由七个 Unicode Code Point 组成，但是由前端渲染成了一个 “用户视角的字符”；或者这个 🙏🏿，由两个 Code Point 组成 (一个 🙏，外加一个表示肤色的 Code Point) 。</p>
+<p>更一般地讲，32 位 Char 类型无法表示全部的用户视角的字符，能表示的有英文、汉字、日语等；不能表示的有法语等小语种、部分组合而成的 emoji 👩👧。</p>
+<p>不少编程语言中都是用 Char 作为字符类型，久而久之便形成了 “Char == 字符” 这样的假设，潜意识地认为字符类型可以表示任何用户角度的字符，但现在通过上面的几个例子，可以看到 Char 类型与用户视角的字符并不相同。</p>
+<p>这里建议读者把 32 位 Char 类型当作表示 Unicode Code Point 的类型，不再使用 “字符” 类型这个词。因为不论 “字符” 还是 “Character”，在计算机中都是含有歧义的词语；比如一个 “字符” 是指 8 位？16 位？还是 32 位？更或是“用户角度的字符”？而这些概念都有对应的指代更为明确的词语。</p>
+<p>“Char == 字符” 的时代已经过去了，虽然 Char 依然表示字符类型，但却无法表示很多 “用户视角的字符”，欢迎来到全新的 Unicode 时代~</p>
+<p>类比计算机发展早期，比如在 C 语言中，一个 char (8 位) 可以表示 ASCII 字符；但在当今的时代，即使是 32 位的 Char，依然有很多用户视角的字符超出了其表示能力。</p>
+<p><strong>小结</strong></p>
+<ul>
+<li>很多用户角度的字符已经超出了 Unicode 字符的表示范围，即 32 位 Char 类型的表达能力。<br>
+“Char == 字符” 假设，不再成立，或者在一定范围内成立。</li>
+<li>字符是一个很容易产生歧义的词，当谈及字符时候一定要小心 (指代不够明确，是用户角度的字符？Char 类型？32 位？16 位？8 位？)。</li>
+<li>Char 类型有可能误导使用者，其在部分场景够用，但是更复杂的场景会暴露其不足 (在后面的 Code Point Unaware String 章节会有进一步的讨论) 。</li>
+</ul>
+<h1 id="走进字符串">走进字符串</h1>
+<p>可以看到，即使是一个用户视角的字符，我们也可能需要一个字符串 (多个 Char 类型) 来表示。</p>
+<p>我们对字符串最直观的认识 —— Char 数组，这个直观认识不管从人类直觉还是从计算机发展都是很理所当然的。</p>
+<p>从人类直觉来说，字符串，字面意思，“字符” 的 “串”，使用代码来表示，自然而然会想到用 Char 数组。</p>
+<p>从笔者个人学习经历来说，笔者学的第一门编程语言是 C 语言，C 语言里面并没有单独的 String 类型，在 C 里面，字符串与 char 数组是等价的。</p>
+<p>在一些语言的 String 设计中，这种直觉也是 “行得通” 的，比如 Java、C#、Swift，其字符串的长度都表示 (该语言中) 字符类型的个数，对 String 索引操作得到的也是字符类型。</p>
+<p>但如果我们再扩大一下视角，来横向看一下各个编程语言中的 String 类型，我们会发现，“字符串是 Char 数组” 这个概念，好像并不统一。</p>
+<figure data-type="image" tabindex="3"><img src="https://taoliq.github.io/post-images/1685974161618.png" alt="" loading="lazy"></figure>
+<p>我们通过各个语言中 String 类型索引和长度的含义，以此来判断其 String 是否为 Char 数组。</p>
+<p>索引和长度的含义可能是语言中内置 Char 类型，此时 String 与 Char 数组无异，我们可以像操作数组一样操作 String；</p>
+<p>除此之外，索引和长度还可能是指 “字节”，二者的关系 —— 一个 Char 可以由一个多个字节组成 (更具体的关系在后面的编码章节会继续深入)，比较的语言和结果如下：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Swift</th>
+<th>Go</th>
+<th>Rust</th>
+<th>Julia</th>
+<th>Java</th>
+<th>C#</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>String 索引含义</td>
+<td>Character 类型</td>
+<td>byte</td>
+<td>byte</td>
+<td>byte</td>
+<td>Char 类型</td>
+<td>Char 类型</td>
+</tr>
+<tr>
+<td>String 是 Char 数组？</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p>注：这里并不考察 String 与 Char 数组的转换，因为所有语言都支持这种操作。</p>
+<p>可以看到，这些语言都做出了不同的选择 (设计) ，设计者到底为什么做出决定，各个语言为何在 string 的概念上不尽相同。</p>
+<p><s>这一切的背后到底是道德的沦丧，还是人性的扭曲。</s></p>
+<p>仔细思考一下这个分类，其实是很粗糙的，同时也存在一些问题的，比如：</p>
+<ol>
+<li>不同语言中字符类型相同吗？C 语言中 char 是 8 位，Java 中是 16 位，Rust 中是 32 位，其他语言呢？基于不同的 char 类型比较得出的结论有意义吗？</li>
+<li>String 类型的属性依赖于另一个类型？假如改变某一个语言中字符类型的实现，那 String 的属性也跟着变了</li>
+</ol>
+<p>为了解释这些疑问，同时为了看到各语言中 String 类型更本质的区别，我们再进一步来看看 String 类型的实现。</p>
+<figure data-type="image" tabindex="4"><img src="https://taoliq.github.io/post-images/1685974142352.png" alt="" loading="lazy"></figure>
+<h1 id="深入实现之前-unicode-编码">深入实现之前 —— Unicode 编码</h1>
+<p>在讨论 String 的实现之前，我们先简单讲解一下 Unicode 编码，读者可能之前听到过 UTF-8、UTF-16、UTF-32，这里会尽可能地从 high-level 进行讲解。</p>
+<p>首先我们从编码说起，一句话解释，编码就是将 Code Points 转化成二进制字节的过程；</p>
+<figure data-type="image" tabindex="5"><img src="https://taoliq.github.io/post-images/1685974115502.png" alt="" loading="lazy"></figure>
+<p>依然从老朋友 ASCII 码讲起，对于 ASCII 码而言，编码只有一种，直接将编号换算 (进制转换) 成二进制 (或者十六进制) 即可；<br>
+如：大写字母 “A” 的编号 65，编码后就是 0x41。</p>
+<p>基于这种直接进制转换的思想，我们便得到了名为 UTF-32 的编码方式 —— 直接将 Unicode Code Point 转换成 32 位的二进制字节即可；</p>
+<p>如下图中的 A 和 😀，分别换算成 00 00 00 41 和 00 01 F6 00，</p>
+<p>这种编码方式的缺点很明显 —— 浪费空间，对于常用的小编号 Code Point (字母和数字，在 ASCII 字符集内的字符) ，会存在前导零，这些前导零会浪费空间。</p>
+<figure data-type="image" tabindex="6"><img src="https://taoliq.github.io/post-images/1685974104352.png" alt="" loading="lazy"></figure>
+<p>为了解决 UTF-32 浪费空间的前导零，便有了变长编码 —— UTF-8。</p>
+<p>读者只需要理解两种编码的由来和特点即可，至于如何具体编码，这篇文章不会包含这部分内容。</p>
+<figure data-type="image" tabindex="7"><img src="https://taoliq.github.io/post-images/1685974097163.png" alt="" loading="lazy"></figure>
+<p>在上图中可以看到，Code Point 经过 UTF-8 编码得到的字节从一个到四个不等。</p>
+<p>再引入一个概念——Code Unit  (编码单元) ，指的是编码后的基本单元的长度，UTF-32 的编码单元是 32 位，4 个字节，编码名称中的 32 指的就是编码单元的长度；</p>
+<p>UTF-8 同理，编码后的基本单元长度是 8 位，一个字节。</p>
+<p>关于 UTF-16，从现在的角度来看，既有前导零浪费空间的问题 (下图中的 A 字符) ，又是变长编码 (变长编码的缺点在后面会讨论到) ，</p>
+<p>这东西可以说完全是 “时代的眼泪”，UTF-16 的设计初衷是 “定长编码”，因为早期的 Unicode 标准犯了一个历史错误——过早承诺了 Code Point 可以用 16 位存下。</p>
+<p>但随着 Unicode 标准的演进，最初的设计优点 (定长编码) 不复存在，成了只留下了缺点 (浪费空间和变长) 的编码方案。</p>
+<p>虽然不在本文的关注范围内，但是如果遇到文本乱码，那基本上是编码问题了。</p>
+<p>你无法在不知道编码的情况下解决乱码的问题。</p>
+<blockquote>
+<p>没有编码的字符串，毫无意义！——马主任</p>
+</blockquote>
+<figure data-type="image" tabindex="8"><img src="https://taoliq.github.io/post-images/1685974060180.png" alt="" loading="lazy"></figure>
+<p>在了解了 Unicode 和相关编码之后，再来回头看一下各种语言的 Char 和 String 类型的实现：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Swift</th>
+<th>Go</th>
+<th>Rust</th>
+<th>Julia</th>
+<th>Java</th>
+<th>C#</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>String 实现编码</td>
+<td>UTF-16 -&gt; UTF-8</td>
+<td>UTF-8</td>
+<td>UTF-8</td>
+<td>UTF-8</td>
+<td>UTF-16</td>
+<td>UTF-16</td>
+</tr>
+<tr>
+<td>String 索引含义</td>
+<td>Character 类型</td>
+<td>byte</td>
+<td>byte</td>
+<td>byte</td>
+<td>Char 类型</td>
+<td>Char 类型</td>
+</tr>
+<tr>
+<td>字符类型</td>
+<td>User-perceived character</td>
+<td>32 位</td>
+<td>32 位</td>
+<td>32 位</td>
+<td>16 位</td>
+<td>16 位</td>
+</tr>
+<tr>
+<td>字符类型是用户角度的字符？</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>String 是编码单元数组？</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p>可以很明显的看到，首先是 String 类型实现上的不同——有的语言采用了 UTF-8 编码，有的采用了 UTF-16。</p>
+<p>其次，连 Char 类型的实现也不一样，Swift 中的 Character 类型，其抽象程度是最高的，可以直接用来表示用户角度的字符；比如需要 7 个 Code Point 才能表示的一家子 👨‍👩‍👧‍👦，在 Swift 中完全可以用一个 Character 类型的变量存下。</p>
+<p>其它语言中的 Char 类型有 32 位的也有 16 位的，这两种实现中只有 32 位的 Char 可以表示 Unicode Code Point，而 16 位 Char 甚至连一个 Code Point 都无法表示，要知道，Code Point 可是 Unicode 标准中最小的带有语义的单元。</p>
+<p>编程语言中各不相同的 String 和 Char 类型的设计，是否存在统一的视角进行解读？</p>
+<h1 id="string-类型的历史变迁">String 类型的历史变迁</h1>
+<p>下面，从计算机发展的角度来理解一下各语言的设计初衷。</p>
+<h2 id="ascii-码-c-语言">ASCII 码， C 语言</h2>
+<p>计算机早期处理的自然语言字符很有限，使用 ASCII 编码就能装下，对于字符串和字符的概念也没有明确的区分。</p>
+<p>比如在 C 语言中，使用 8 位的 Char 类型表示 ASCII 字符，而字符串也自然而然地使用了 char 数组。</p>
+<p>从这里开始慢慢诞生了一个假设或者说是潜意识的习惯 —— “一个 Char 表示一个字符”，很显然，这里需要限定是 8 位 Char 和 ASCII 码字符。</p>
+<h2 id="unicode-utf-16java-和-c">Unicode， UTF-16，Java 和 C#</h2>
+<p>随着计算机的发展，出现了 Unicode 来统一人类的语言的编码，但是早期的 Unicode 犯了一个 历史性错误——承诺 Unicode 字符可以用 16 位存下。</p>
+<p>与此同时第一批支持 Unicode 的 Java 和 windows 都成了受害者——选择了 UTF-16 编码，但这个编码延续了以前的“习惯” —— “一个 Char 依然能表示一个字符”，只不过这里的 Char 变成了 16 位，字符变成了早期 Unicode 字符集里的字符。</p>
+<p>这个时期的编程语言里也出现了独立的数据类型 String 来表示字符串，幸运的是，在 UTF-16 编码下，String 依然可以视作 Char 数组，因为 UTF-16 编码中每个编码单元都是 16 位，这些语言中的 Char 也从以前语言中的 8 位变成了 16 位。</p>
+<h2 id="unicodeutf-8-和最近的编程语言">Unicode，UTF-8 和最近的编程语言</h2>
+<p>随着 Unicode 的进一步发展，标准内的字符集已经无法用 16 位装下了，需要 32 位才能表示一个 Unicode 编码的字符。</p>
+<p>甚至还出现了一些组合字符或者修饰字符，甚至有些自然语言里无法清晰地定义 “字符” 这个概念。</p>
+<p>这时候即使是能够表示 Unicode 编码字符的 32 位 Char，也不能表示用户角度的字符了。</p>
+<p>此时上述“习惯” —— “Char == 字符”已经不成立了，与此同时出现了 UTF-8 的编码方式，该编码方式被大量的网站和协议，工具等采用，采用 UTF-16 实现 String 的编程语言开始产生新的问题：</p>
+<ol>
+<li>虽然 String 依然是 Char 数组，但这里的 16 位 Char 表示能力已经远低于后面语言中的 32 位 Char 了，甚至一些汉字和 emoji 需要两个 16 位 Char 才可以表示。</li>
+<li>丢弃假设“Char == 字符”，String 不再视作 Char 数组，如 Go、Rust、Julia。这些语言中，不存在 String 到 Char 的抽象开销，由此带来了高效的字符串处理效率，但是需要用户先打破自己对字符串的传统认知</li>
+</ol>
+<h1 id="string-类型的设计与性能">String 类型的设计与性能</h1>
+<p>说完了比较 high-level，比较抽象的设计层面，我们再来关注一下更具体的东西——性能，看看 String 的设计与性能会存在什么样的联系。</p>
+<p>首先补充两个背景知识：</p>
+<ul>
+<li>UTF-8 已成为事实上的标准。</li>
+<li>变长编码带来的 Code Point 抽象层开销。</li>
+</ul>
+<p>这两条背景知识刚好对应着 String 性能的两个维度——外部和内部：</p>
+<ul>
+<li>String 外部的性能 (与其他库或者接口操作) ，String 实现采用非 UTF-8 编码时，会在 String 编解码时产生开销 (如 Java 和 C#) 。</li>
+<li>String 内部的性能 (自身操作) ，比如查找，切片等操作，String 抽象成非 “编码单元” 数组时，由于多了一层抽象层 (编码索引和字符索引之间的转换) ，在 String 自身操作时会产生性能问题 (如 Swift) 。</li>
+</ul>
+<p>举例说明 UTF-8 变长编码索引 Code Point 时的性能开销：</p>
+<figure data-type="image" tabindex="9"><img src="https://taoliq.github.io/post-images/1685974045975.png" alt="" loading="lazy"></figure>
+<p>比如，如果我们想得到汉字“阳”的字符类型索引，由于前面的字符 (字母标点和汉字) 对应的编码字节都是不确定的，所以需要从头开始计算，这样一个 O(N) 的操作对于字符串这种准基本类型代价是很高的。</p>
+<p>再来定性分析一下各语言 String 类型的性能：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Swift</th>
+<th>Go</th>
+<th>Rust</th>
+<th>Julia</th>
+<th>Java</th>
+<th>C#</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>String 是编码单元数组？</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>字符串操作开销</td>
+<td>有</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+</tr>
+<tr>
+<td>String 实现编码</td>
+<td>UTF-8</td>
+<td>UTF-8</td>
+<td>UTF-8</td>
+<td>UTF-8</td>
+<td>UTF-16</td>
+<td>UTF-16</td>
+</tr>
+<tr>
+<td>API 间编解码开销</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+<td>有</td>
+<td>有</td>
+</tr>
+</tbody>
+</table>
+<p>继续具体地看一下各个语言的 String 类型：</p>
+<p>Swift</p>
+<p>该语言中的 Character 抽象能力最强，可以表示用户角度的字符，其 String 类型的长度也是符合人类直觉的 “字符串” 的长度；但是由于 Character 这层抽象层，不仅在使用上带来不便，为什么 Swift 的 String 这么难用 [3]，性能也会受影响，Swift String 性能问题) [4]。</p>
+<p>Java</p>
+<p>在 Java 18 中，各种 API 已经默认使用了 UTF-8 编码，但是使用 UTF-16 实现的 String 不可避免的会产生编解码的开销；与此同时，由于 16 位 Char 表达能力的缺陷，在 String 类型的 API 中除了 Char 相关的，也有 Code Point 相关的，如 CharAt (int index) [5] 和 codePointAt (int index) [6]。</p>
+<p>C#</p>
+<p>不光有 16 位的 Char 类型，还有 32 位的 Rune 类型。</p>
+<p>(一点吐槽，Java 设计 UTF-16 String 是由于 Unicode 标准的历史错误，但是 C# 的时期是可以避免这点的，为什么也栽了跟头呢？)</p>
+<p>虽然 C# String 实现和微软自家生态都是基于 UTF-16，但微软官方也在提倡采用 UTF-8 编码，Use the Windows UTF-8 code page [7]。</p>
+<p>Go，Rust，Julia</p>
+<p>基于 UTF-8 编码，无额外抽象层的 String 类型，在性能上看不到明显短板，唯一可能让人感到违背直觉的——无法按照 char 来操作，接下来我们就来讲解一下。</p>
+<h1 id="code-point-unaware-string">Code Point Unaware String</h1>
+<p>比较现代的语言都选择了 UTF-8 实现的 string，性能上可以看到两方面都没有劣势，唯一可能让人感到违背直觉的——无法按照 char 来操作，更准确的说法是，Code Point Unaware String，在网上也可以经常看到一些讨论，如 what if strings were Code Point aware? [8] on Rust，Indexing strings by Unicode code point instead of code unit? [9] on Julia。</p>
+<p>那么这个设计的初衷是什么呢，即使不去设计编程语言，作为语言 (库) 的使用者又该如何理解呢？</p>
+<p>首先，从实现的角度来说，变长的 UTF-8 编码不适合 “直接” 抽象成 Code Point 数组 (可以参考 Swift 的抽象层导致的性能问题) ；</p>
+<p>其次，在当今的软件中，索引 Code Point 并不像大家直觉中那么重要，绝大部分场景 Code Point 都不能满足需求。</p>
+<p>从实际的应用软件角度来考虑：</p>
+<ul>
+<li>鼠标移动和选定——从上面的例子可以发现，用户角度的字符并不是由 Char 一一对应的，在这种情况下，使用到的基本单位是字素 (grapheme)</li>
+<li>文本查找和替换的场景——类似下方背景中性能问题提到的例子，需要先通过遍历或者搜索得到字符串的位置，再通过这个位置来操作，而这个位置是字节还是 Code Point 的并不会影响功能，但是会影响性能 (后者需要额外的计算)</li>
+<li>限制长度的场景——如输入字符串，协议传输，数据库等；更关心字符串编码后的长度，即字节数，使用到的基本单位是 (code unit)</li>
+<li>在屏幕上渲染 “字符”——同样地，与 Char 无关，一个 Char 占据多少列是不确定的，需要由渲染引擎决</li>
+</ul>
+<p>最后一点，不是那么明显但是影响深远，Code Point 这层抽象不是一个 “正确” 的抽象。</p>
+<p>Code Point 在简单的场景中使用看起来不会有问题，但一旦问题变复杂，程序员可能意识不到是编程语言的数据类型的问题；Code Point 作为一个不准确的抽象，如果仅指望通过它来进行简化，无异于掩盖 Unicode 的复杂性，而这种行为反倒会埋下潜在的隐患。</p>
+<p>由此可见，该抽象层可能会误导程序员，掩盖了所处理问题的复杂性。</p>
+<h1 id="总结">总结</h1>
+<p>从编程语言的历史演进中可以看到，String 可以说是始于 Char 数组，但随着处理问题越来越复杂 (源于人类语言的复杂性) ，在一些现代语言中，String 已经不再作为 Char 数组，而是独立成单独的类型；出于不同的目的或者是原因，各个编程语言中的字符类型和 String 类型也存在着这样或那样的差异。</p>
+<p>最后对阅读到这里的读者表示感谢，希望读者看到这里能够有所启发，有所收获。</p>
+<h1 id="参考资料">参考资料</h1>
+<p>[1] The Unicode Standard - https://zh.wikipedia.org/wiki/Unicode</p>
+<p>[2] Unicode 官网 - https://home.unicode.org/</p>
+<p>[3] Swift 的字符串为什么这么难用？- https://kemchenj.github.io/2019-10-07/</p>
+<p>[4] Swift String 性能问题 - https://blog.jerrychu.top/2020/11/29/Swift%E5%AD%97%E7%AC%A6%E4%B8%B2/</p>
+<p>[5] Java charAt API- https://docs.oracle.com/en/java/javase/18/docs/api/java.base/java/lang/String.html#charAt(int)</p>
+<p>[5] Java codePointAt API - https://docs.oracle.com/en/java/javase/18/docs/api/java.base/java/lang/String.html#codePointAt(int)</p>
+<p>[6] Use the Windows UTF-8 code page - https://learn.microsoft.com/en-us/windows/apps/design/globalizing/use-utf8-code-page</p>
+<p>[7] what if strings were Code Point aware? - https://internals.rust-lang.org/t/what-if-strings-were-code-point-aware/18043</p>
+<p>[8] what if strings were Code Point aware? - https://discourse.julialang.org/t/indexing-strings-by-unicode-code-point-instead-of-code-unit/55248</p>
+<p>[9] Indexing strings by Unicode code point instead of code unit? - https://discourse.julialang.org/t/indexing-strings-by-unicode-code-point-instead-of-code-unit/55248</p>
+<p>[10] UTF-8 Everywhere - https://utf8everywhere.org/</p>
+<p>[11] Dark corners of Unicode - https://eev.ee/blog/2015/09/12/dark-corners-of-unicode/</p>
+<p>[12] Let's Stop Ascribing Meaning to Code Points - https://manishearth.github.io/blog/2017/01/14/stop-ascribing-meaning-to-unicode-code-points/#fn:2</p>
+<p>[13] Breaking Our Latin-1 Assumptions - https://manishearth.github.io/blog/2017/01/15/breaking-our-latin-1-assumptions/#fn:4</p>
+<p>[14] twitter - how twitter Counting characters - https://developer.twitter.com/en/docs/counting-characters</p>
+<p>[15] LINE - The 7 Ways of Counting Characters - https://engineering.linecorp.com/en/blog/the-7-ways-of-counting-characters/</p>
+<p>[16] reddit - UFT8 and String? Why Vecu8? - https://www.reddit.com/r/rust/comments/2b08l5/uft8_and_string_why_vecu8/</p>
+<p>[17] Should UTF-16 be considered harmful - http://programmers.stackexchange.com/questions/102205/should-utf-16-be-considered-harmful</p>
+<p>[18] 快速搞懂🔍Unicode，ASCII，UTF-8，代码点，编码... - https://www.bilibili.com/video/BV1kD4y1z7ft/</p>
+<p>[19] The importance of language-level abstract Unicode strings - https://unspecified.wordpress.com/2012/04/19/the-importance-of-language-level-abstract-unicode-strings/</p>
+<p>[20] What Every Programmer Absolutely, Positively Needs To Know About Encodings And Character Sets To Work With Text - https://kunststube.net/encoding/</p>
+<p>[21] UTF-8 String Indexing Strategies - https://nullprogram.com/blog/2019/05/29/</p>
+<p>[22] Popularity of text encodings - Wikipedia - https://en.wikipedia.org/wiki/Popularity_of_text_encodings</p>
+<p>[23] UTF-8 encoded strings - https://www.reddit.com/r/ProgrammingLanguages/comments/11j56u0/utf8_encoded_strings/</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[向LLVM合并的第一个patch]]></title>
+        <id>https://taoliq.github.io/post/向LLVM合并的第一个patch/</id>
+        <link href="https://taoliq.github.io/post/向LLVM合并的第一个patch/">
+        </link>
+        <updated>2021-03-31T14:28:33.000Z</updated>
+        <summary type="html"><![CDATA[<p>终于向LLVM合并了第一个patch，成就感爆棚，谨以此文纪念一下。</p>
+<p>虽然第一个patch只是删了三行注释，跟最初的设想差了十万八千里。</p>
+<p>首先贴上<a href="https://reviews.llvm.org/rGd2d6720a93a2469fb3a752bd59674bd2cf97d91f">patch的地址</a>。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>终于向LLVM合并了第一个patch，成就感爆棚，谨以此文纪念一下。</p>
+<p>虽然第一个patch只是删了三行注释，跟最初的设想差了十万八千里。</p>
+<p>首先贴上<a href="https://reviews.llvm.org/rGd2d6720a93a2469fb3a752bd59674bd2cf97d91f">patch的地址</a>。</p>
+<!--more-->
+<p>这个patch本来是在读代码的过程中，看到一段TODO注释，目测很简单，根据当前代码如法炮制了一段，提交Revision，连benchkmark都没跑，就是这么自（yu）信（chun）。</p>
+<p>但是提交之后的好多天，自己标注的reviewers都没来理睬我的patch，我本来都不抱希望了，继续学着用llvm的测试框架test-suite和如何跑PGO测试；大约过了十几天，一天醒来，发现一个熟悉的名字（reviewer的）出现在了邮件的标题中，自己的first patch被review了！当时一下子就精神了。</p>
+<p>果不其然，人家还是建议我跑一下benchmark，于是就有了之前那篇关于test-suite的文章。同时review也在回复中指出，在他的测试中，对于inline cost计算变得更加准确后，对于性能的提升并不明显，他的推测是，这些更加准确的cost并没有影响到critically important call sites。这点也在自己跑的SPEC2006 benchmark中得到了印证。同时这点也让我感到很吃惊，有点二八定律的感觉——计算二成的cost来揪出八成的important call sites进行内联。</p>
+<p>但是，review很贴心地指出，不管我是冲着TODO做的，甚至是仅仅移除TODO注释，他都会很高兴LGTM。</p>
+<p>本着奥卡姆剃刀法则，我选择删掉自己的代码，移除注释。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[字节跳动系统开发实习生面经]]></title>
+        <id>https://taoliq.github.io/post/字节跳动系统开发实习生面经/</id>
+        <link href="https://taoliq.github.io/post/字节跳动系统开发实习生面经/">
+        </link>
+        <updated>2021-03-28T11:06:21.000Z</updated>
+        <summary type="html"><![CDATA[<p>随着几天前HR小姐姐发来的offer，字节的实习求职算是告一段落了，趁着还没有忘光，赶紧留下一篇记录。</p>
+<p>首先明确一下所投的岗位，虽然标题和联系邮件都写着的系统开发，但是在麻烦同学联系内推的时候，我是朝着编译相关的岗位去的，因为自己的硕士研究方向和所做的远程实习都是跟编译器打交道的。最后联系到的内推也是STE（System Technology&amp;Engineering）部门的性能优化方向职位（实际工作内容是编译器）。这里也提醒一下想找工作的你，联系内推的时候最好还是点对点的内推，直接推到某个部门的对应岗位或者是小组，最大限度地确保自己跟岗位的匹配程度。</p>
+<p>进入正题前，先说一下，自己好像已经忘了很多了，下面的只是还能回忆起来的部分的问题。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>随着几天前HR小姐姐发来的offer，字节的实习求职算是告一段落了，趁着还没有忘光，赶紧留下一篇记录。</p>
+<p>首先明确一下所投的岗位，虽然标题和联系邮件都写着的系统开发，但是在麻烦同学联系内推的时候，我是朝着编译相关的岗位去的，因为自己的硕士研究方向和所做的远程实习都是跟编译器打交道的。最后联系到的内推也是STE（System Technology&amp;Engineering）部门的性能优化方向职位（实际工作内容是编译器）。这里也提醒一下想找工作的你，联系内推的时候最好还是点对点的内推，直接推到某个部门的对应岗位或者是小组，最大限度地确保自己跟岗位的匹配程度。</p>
+<p>进入正题前，先说一下，自己好像已经忘了很多了，下面的只是还能回忆起来的部分的问题。</p>
+<!--more-->
+<h3 id="一面">一面</h3>
+<p>基本所有问题都是围绕着简历上的内容和岗位专业方向的。</p>
+<p>简历上的内容主要是指研究方向和远程实习涉及到的内容。</p>
+<ul>
+<li>跟研究方向（我的研究课题是内联优化）相关的，内联优化的优点</li>
+</ul>
+<p>岗位专业方向的主要是一些知识性的。比如</p>
+<ul>
+<li>编程语言
+<ul>
+<li>闭包的实现</li>
+<li>C++中虚函数的代码存放在内存的哪个区域</li>
+<li>了解C++20特性吗</li>
+</ul>
+</li>
+<li>编译原理
+<ul>
+<li>fall-through为什么快</li>
+<li>知道LTO，PGO吗</li>
+<li>指令调度，背景，影响指令调度的因素</li>
+</ul>
+</li>
+<li>静态分析
+<ul>
+<li>传递函数的特点</li>
+<li>SSA的优点，在源码中的实现</li>
+</ul>
+</li>
+<li>其他
+<ul>
+<li>了解过什么性能分析的工具吗</li>
+</ul>
+</li>
+<li>最后的代码题，拓扑排序（因为在编译方向经常会遇到，感觉这个编程题还挺接地气的）</li>
+</ul>
+<p>总结一下，一面感觉是主要是在确认知识的广度，有很多东西只知道名词，但是没具体了解过，有一些问题面试官也会做引导，体验很棒。</p>
+<h3 id="二面">二面</h3>
+<p>二面的面试官从气场上感觉是个leader，可能是小组的吧？现在也不确定。</p>
+<p>二面内容主要是围绕简历内容，比一面的重视广度比起来，更加重视深度，比如研究方向内联优化具体的代码和实现看过没有，远程实习中具体做过的事情，围绕做过的事情的进一步提问。</p>
+<p>二面的话，只能说真金不怕火炼，自己做过的事情肯定没人比自己更了解。</p>
+<h3 id="三面">三面</h3>
+<p>一开始闲聊了一些，比如为什么选择这个底层的编译器岗。</p>
+<p>正式的问题主要都是专业基础课。。。。</p>
+<p>TCP三次握手和四次挥手，TLB是什么，开机时软件做的事情。</p>
+<p>编程题第一道，用C写，统计一个字符串中长度最长的单词。</p>
+<p>第二题，给一个数组，和一个整数m，往数组上面的部分数字上加，使得最后数组变得“均衡”，这个均衡还是让我自己定义的。。还让我想几个算法自己比较一下。。</p>
+<p>最后在反问环节，得到的反馈是，基础不太行。。</p>
+<p>也是在反问环节得知这个三面是交叉面试，我一个来找实习的我？？？？</p>
+<h3 id="hr面">HR面</h3>
+<p>主要是围绕简历问的主观问题。比如</p>
+<ul>
+<li>
+<p>平时有做博客或者知识记录吗</p>
+</li>
+<li>
+<p>会看网上的文章或者博客学习吗</p>
+</li>
+<li>
+<p>为什么选择这个岗位（因为本科专业软硬兼顾，而这个岗位是偏重软）</p>
+</li>
+<li>
+<p>自己最喜欢哪个项目</p>
+</li>
+<li>
+<p>做项目遇到的比较大的困难</p>
+</li>
+<li>
+<p>现在学了这么多，回头看以前做的项目感觉有什么不足</p>
+</li>
+<li>
+<p>有没有投其他的互联网大厂，为什么选择字节</p>
+</li>
+<li>
+<p>为什么去日本读研</p>
+</li>
+</ul>
+<h3 id="非干货的纯闲聊">非干货的纯闲聊</h3>
+<p>面试的具体问题就是上面那些了，这里是一些自己的主观感受。</p>
+<p>一面面试官一开始提到b站上我的一个讲v8寄存器分配的视频，当时震惊了一下，没想到面试官知道我在b站上的视频，另外就是，那个视频真的有人看啊！不过一面面试官也提到了，知道中科院PLCT实验室经常做技术分享，看来他平时也会默默关注这些，好感+1。</p>
+<p>一面面试官在问问题的时候也会做一些引导，从来龙去脉上给一些提示，这也是让我觉得体验很棒的一点。</p>
+<p>三面在面试之前我以为只是简单的聊一聊，结果开始之后才发现越来越不对劲，心态逐渐崩坏，直到反问环节才知道是交叉面试，面试官不是搞编译的，所以只能问基础问题。。但是在编程题时定义问题不清晰，之后的提问也大多没有引导，让我在三面结束后心态有点受影响，好在第二天HR小姐姐的联系电话终结了自己的忐忑。</p>
+<p>HR面咱先不提HR小姐姐有多好看，就提的问题而言，体验很好，并没有在网上说的那些——性格、优缺点、职业规划、加班态度等；反而都是跟自己密切相关的问题，让人有话可讲，真不错。</p>
+<p>除了经历的面试本身，还有一点印象很深，那就是我发现自己经历的面试跟网上看到的面经出入挺大的。网上看了那么多面经，除了增加焦虑以外帮助甚微，有可能是岗位的差异导致的？与其看那些面经，还不如摆正心态，把功夫下在自己的专长的地方；小马过河的故事大家都知道的嘛。</p>
+<hr>
+<p>**追记：**关于最后一点，自己的经历跟网上的大多数面经出入很大，又跟友人S聊了一下，感觉很有必要在这里提及一下，因为自己的情况本身就是属于偏差很大，数量很少的样本，即专业方向跟岗位匹配程度很高的样本；而网上的大部分面经，或者说大部分人，根据他们的情况只能从基础问题问起。</p>
+<p>其次，被问到的问题也会受到自己的简历的内容，面试官自身所影响，这篇面经可参考的价值又少了不少2333。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Hello Gridea]]></title>
+        <id>https://taoliq.github.io/post/hello-gridea/</id>
+        <link href="https://taoliq.github.io/post/hello-gridea/">
+        </link>
+        <updated>2018-12-11T16:00:00.000Z</updated>
+        <summary type="html"><![CDATA[<p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
+✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
+✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
+<!-- more -->
+<p><a href="https://github.com/getgridea/gridea">Github</a><br>
+<a href="https://gridea.dev/">Gridea 主页</a><br>
+<a href="https://fehey.com/">示例网站</a></p>
+<h2 id="特性">特性👇</h2>
+<p>📝  你可以使用最酷的 <strong>Markdown</strong> 语法，进行快速创作</p>
+<p>🌉  你可以给文章配上精美的封面图和在文章任意位置插入图片</p>
+<p>🏷️  你可以对文章进行标签分组</p>
+<p>📋  你可以自定义菜单，甚至可以创建外部链接菜单</p>
+<p>💻  你可以在 <strong>Windows</strong>，<strong>MacOS</strong> 或 <strong>Linux</strong> 设备上使用此客户端</p>
+<p>🌎  你可以使用 <strong>𝖦𝗂𝗍𝗁𝗎𝖻 𝖯𝖺𝗀𝖾𝗌</strong> 或 <strong>Coding Pages</strong> 向世界展示，未来将支持更多平台</p>
+<p>💬  你可以进行简单的配置，接入 <a href="https://github.com/gitalk/gitalk">Gitalk</a> 或 <a href="https://github.com/SukkaW/DisqusJS">DisqusJS</a> 评论系统</p>
+<p>🇬🇧  你可以使用<strong>中文简体</strong>或<strong>英语</strong></p>
+<p>🌁  你可以任意使用应用内默认主题或任意第三方主题，强大的主题自定义能力</p>
+<p>🖥  你可以自定义源文件夹，利用 OneDrive、百度网盘、iCloud、Dropbox 等进行多设备同步</p>
+<p>🌱 当然 <strong>Gridea</strong> 还很年轻，有很多不足，但请相信，它会不停向前 🏃</p>
+<p>未来，它一定会成为你离不开的伙伴</p>
+<p>尽情发挥你的才华吧！</p>
+<p>😘 Enjoy~</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[用正则表达式判断一个二进制数能否被3整除]]></title>
+        <id>https://taoliq.github.io/post/用正则表达式判断一个二进制数能否被3整除/</id>
+        <link href="https://taoliq.github.io/post/用正则表达式判断一个二进制数能否被3整除/">
+        </link>
+        <updated>2017-09-07T02:07:44.000Z</updated>
+        <summary type="html"><![CDATA[<p>问题描述如标题，很简洁：用一个正则表达式判断一个二进制数能否被3整除</p>
+<p>比如：<br>
+000 		True<br>
+11		True<br>
+1001	True<br>
+1011 	False</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>问题描述如标题，很简洁：用一个正则表达式判断一个二进制数能否被3整除</p>
+<p>比如：<br>
+000 		True<br>
+11		True<br>
+1001	True<br>
+1011 	False</p>
+<!-- more -->
+<p>解决思路也很简单：首先用有限状态机（FSM）实现对能否被3整除的判断，然后将其转换成正则</p>
+<p>有限状态机图如下，分析过程摘自matrix67，并在此感谢一下神犇</p>
+<figure data-type="image" tabindex="1"><img src="http://www.matrix67.com/blogimage/200812011.gif" alt="" loading="lazy"></figure>
+<blockquote>
+<p>注意到，一个二进制数后面加一个“0”相当于该数乘以2，一个二进制数后面加一个“1”相当于该数乘2加1。设定三个状态，分别叫做0、1和2，它们表示当前的数除以3所得的余数。如果对于某个i和j，有i*2≡j (mod 3)，就加一条路径i→j，路径上标一个字符“0”；如果i*2+1≡j (mod 3)，则在路径i→j上标记“1”。状态0既是我们的初始状态，也是我们的最终状态。我们的自动机就做好了。现在，假如二进制数10010走进来了。从状态0出发，机器首先读到一个“1”，于是当前位置挪到状态1，表明目前该数模3余1；然后，系统读了一个“0”，我们紧跟着走到状态2，表明二进制数“10”被3除余2；下一步，我们回到状态1，表明“100”除以3余1；再往后，我们得知“1001”能被3整除。最后呢，我们读到一个0，“1001”的两倍当然还是能被3整除，我们依旧停留在原位。我们得到结论：二进制数10010能被3整除。<br>
+有限状态自动机是可以转化为正则表达式的。上面的这个自动机转化起来非常容易。我们可以先试着用自然语言叙述一下。首先，每个二进制数第一位必然为“1”。到达状态1后，我们可以随意地、任意多次地在状态1周围绕圈圈，最终回到状态1。临近末尾，我们再读到一个“1”返回状态0，这之后随便读多少个“0”都可以了。现在问题分解为：我们又如何用正则表达式表述“从状态1出发随意地走最终回到状态1”呢？在本例中，这是很好描述的：它可以是字符串“1000..001”和“0111..110”的任意组合。把这些东西用正则表达式写出来，就是我们刚才那个神秘的式子：1((10*1)|(01*0))*10* 。</p>
+</blockquote>
+<p>最后再加上位置标识符，<code>^1((10*1)|(01*0))*10*$</code></p>
+<p>从matrix67的分析自然语言可以理解正则，但是从有限状态机转换到正则的通式通法还不会。</p>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="http://blog.2baxb.me/archives/588">使用正则表达式判断二进制数字是否能被3整除</a></p>
+<p><a href="http://www.matrix67.com/blog/archives/1089">趣题：用正则表达式判断一个二进制数是否能被3整除</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[新的开始]]></title>
+        <id>https://taoliq.github.io/post/新的开始/</id>
+        <link href="https://taoliq.github.io/post/新的开始/">
+        </link>
+        <updated>2017-02-01T13:05:37.000Z</updated>
+        <content type="html"><![CDATA[<p>2017，重新起航</p>
+]]></content>
+    </entry>
+</feed>

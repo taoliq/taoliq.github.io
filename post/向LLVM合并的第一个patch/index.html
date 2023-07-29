@@ -1,0 +1,215 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>向LLVM合并的第一个patch | 布洛谷</title>
+<link rel="shortcut icon" href="https://taoliq.github.io/favicon.ico?v=1690634862807">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://taoliq.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="向LLVM合并的第一个patch | 布洛谷 - Atom Feed" href="https://taoliq.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="终于向LLVM合并了第一个patch，成就感爆棚，谨以此文纪念一下。
+虽然第一个patch只是删了三行注释，跟最初的设想差了十万八千里。
+首先贴上patch的地址。
+
+这个patch本来是在读代码的过程中，看到一段TODO注释，目测很简单，..." />
+    <meta name="keywords" content="LLVM" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://taoliq.github.io">
+  <img class="avatar" src="https://taoliq.github.io/images/avatar.png?v=1690634862807" alt="">
+  </a>
+  <h1 class="site-title">
+    布洛谷
+  </h1>
+  <p class="site-description">
+    一点记录，一点分享
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/taoliq" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+        <a href="https://www.zhihu.com/people/tao-banana" target="_blank">
+          <i class="ri-zhihu-line"></i>
+        </a>
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              向LLVM合并的第一个patch
+            </h2>
+            <div class="post-info">
+              <span>
+                2021-03-31
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="https://taoliq.github.io/tag/thYLzw7th/" class="post-tag">
+                  # LLVM
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>终于向LLVM合并了第一个patch，成就感爆棚，谨以此文纪念一下。</p>
+<p>虽然第一个patch只是删了三行注释，跟最初的设想差了十万八千里。</p>
+<p>首先贴上<a href="https://reviews.llvm.org/rGd2d6720a93a2469fb3a752bd59674bd2cf97d91f">patch的地址</a>。</p>
+<!--more-->
+<p>这个patch本来是在读代码的过程中，看到一段TODO注释，目测很简单，根据当前代码如法炮制了一段，提交Revision，连benchkmark都没跑，就是这么自（yu）信（chun）。</p>
+<p>但是提交之后的好多天，自己标注的reviewers都没来理睬我的patch，我本来都不抱希望了，继续学着用llvm的测试框架test-suite和如何跑PGO测试；大约过了十几天，一天醒来，发现一个熟悉的名字（reviewer的）出现在了邮件的标题中，自己的first patch被review了！当时一下子就精神了。</p>
+<p>果不其然，人家还是建议我跑一下benchmark，于是就有了之前那篇关于test-suite的文章。同时review也在回复中指出，在他的测试中，对于inline cost计算变得更加准确后，对于性能的提升并不明显，他的推测是，这些更加准确的cost并没有影响到critically important call sites。这点也在自己跑的SPEC2006 benchmark中得到了印证。同时这点也让我感到很吃惊，有点二八定律的感觉——计算二成的cost来揪出八成的important call sites进行内联。</p>
+<p>但是，review很贴心地指出，不管我是冲着TODO做的，甚至是仅仅移除TODO注释，他都会很高兴LGTM。</p>
+<p>本着奥卡姆剃刀法则，我选择删掉自己的代码，移除注释。</p>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://taoliq.github.io/post/字节跳动系统开发实习生面经/">
+              <h3 class="post-title">
+                字节跳动系统开发实习生面经
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'ab1c637bba57ea5c7624',
+    clientSecret: '7b04c62cdc056d62008182164c1dcd2dc99de2d0',
+    repo: 'taoliq.github.io',
+    owner: 'taoliq',
+    admin: ['taoliq'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  给时光以生命
+  <a class="rss" href="https://taoliq.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
