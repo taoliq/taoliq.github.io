@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.25.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="在折腾树莓派的时候，我也发现不少在网上找到资料了，但是并不适用于自己的情况，所以还是有必要记录这些点滴的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="android手机通过数据线连接树莓派">
+<meta property="og:url" content="http://example.com/2017/07/09/%E6%89%8B%E6%9C%BA%E9%80%9A%E8%BF%87%E6%95%B0%E6%8D%AE%E7%BA%BF%E8%BF%9E%E6%8E%A5%E6%A0%91%E8%8E%93%E6%B4%BE/index.html">
+<meta property="og:site_name" content="Liqiang&#39;s Blog">
+<meta property="og:description" content="在折腾树莓派的时候，我也发现不少在网上找到资料了，但是并不适用于自己的情况，所以还是有必要记录这些点滴的。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://ost0gzer5.bkt.clouddn.com/IMG_20170808_214832.jpg-sample">
+<meta property="og:image" content="http://ost0gzer5.bkt.clouddn.com/Screenshot_2017-08-08-21-51-37-436_com.sonelli.juicessh.png-sample">
+<meta property="og:image" content="http://ost0gzer5.bkt.clouddn.com/Screenshot_2017-08-08-21-51-42-757_com.bitsworking.networkscanner.app.png-sample">
+<meta property="og:image" content="http://ost0gzer5.bkt.clouddn.com/Screenshot_2017-08-08-21-53-13-680_com.bitsworking.networkscanner.app.png-sample">
+<meta property="article:published_time" content="2017-07-09T03:13:47.000Z">
+<meta property="article:modified_time" content="2017-08-08T14:53:30.000Z">
+<meta property="article:author" content="Taoliq">
+<meta property="article:tag" content="树莓派 Raspberry Pi">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://ost0gzer5.bkt.clouddn.com/IMG_20170808_214832.jpg-sample">
+
+
+<link rel="canonical" href="http://example.com/2017/07/09/%E6%89%8B%E6%9C%BA%E9%80%9A%E8%BF%87%E6%95%B0%E6%8D%AE%E7%BA%BF%E8%BF%9E%E6%8E%A5%E6%A0%91%E8%8E%93%E6%B4%BE/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2017/07/09/%E6%89%8B%E6%9C%BA%E9%80%9A%E8%BF%87%E6%95%B0%E6%8D%AE%E7%BA%BF%E8%BF%9E%E6%8E%A5%E6%A0%91%E8%8E%93%E6%B4%BE/","path":"2017/07/09/手机通过数据线连接树莓派/","title":"android手机通过数据线连接树莓派"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>android手机通过数据线连接树莓派 | Liqiang's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Liqiang's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AE%BE%E5%A4%87%E6%B8%85%E5%8D%95"><span class="nav-number">1.</span> <span class="nav-text">设备清单</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#app%E6%B8%85%E5%8D%95"><span class="nav-number">2.</span> <span class="nav-text">app清单</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#JuiceSSH"><span class="nav-number">2.1.</span> <span class="nav-text">JuiceSSH</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Network-Scan"><span class="nav-number">2.2.</span> <span class="nav-text">Network Scan</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4"><span class="nav-number">3.</span> <span class="nav-text">操作步骤</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Taoliq</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/taoliq" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;taoliq" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:taolq@outlook.com" title="E-Mail → mailto:taolq@outlook.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/07/09/%E6%89%8B%E6%9C%BA%E9%80%9A%E8%BF%87%E6%95%B0%E6%8D%AE%E7%BA%BF%E8%BF%9E%E6%8E%A5%E6%A0%91%E8%8E%93%E6%B4%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Taoliq">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Liqiang's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="android手机通过数据线连接树莓派 | Liqiang's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          android手机通过数据线连接树莓派
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-07-09 11:13:47" itemprop="dateCreated datePublished" datetime="2017-07-09T11:13:47+08:00">2017-07-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2017-08-08 22:53:30" itemprop="dateModified" datetime="2017-08-08T22:53:30+08:00">2017-08-08</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>在折腾树莓派的时候，我也发现不少在网上找到资料了，但是并不适用于自己的情况，所以还是有必要记录这些点滴的。</p>
+<span id="more"></span>
+
+<hr>
+<h1 id="设备清单"><a href="#设备清单" class="headerlink" title="设备清单"></a>设备清单</h1><p>android手机（小米6-系统7.1），树莓派3B，数据线</p>
+<hr>
+<h1 id="app清单"><a href="#app清单" class="headerlink" title="app清单"></a>app清单</h1><p><img src="http://ost0gzer5.bkt.clouddn.com/IMG_20170808_214832.jpg-sample" alt="app list"></p>
+<h2 id="JuiceSSH"><a href="#JuiceSSH" class="headerlink" title="JuiceSSH"></a>JuiceSSH</h2><p><img src="http://ost0gzer5.bkt.clouddn.com/Screenshot_2017-08-08-21-51-37-436_com.sonelli.juicessh.png-sample"><br>android上口碑爆棚的终端应用！</p>
+<h2 id="Network-Scan"><a href="#Network-Scan" class="headerlink" title="Network Scan"></a>Network Scan</h2><p><img src="http://ost0gzer5.bkt.clouddn.com/Screenshot_2017-08-08-21-51-42-757_com.bitsworking.networkscanner.app.png-sample"><br>Network Scan可查找与手机处于同一网络下的所有设备对应的IP信息，当你无法确定树莓派当前的IP时，可通过此软件迅速查询到，下文就是通过USB共享网络后使用此app来得到树莓派的IP地址的</p>
+<hr>
+<h1 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h1><ol>
+<li><p>首先确保树莓派开启了ssh功能，具体方法如下</p>
+<blockquote>
+<p>将最新系统烧写进SD卡，如果树莓派的SD卡工作在Windows环境下，则在”此电脑(我的电脑)”中可以看到一个名为”boot”的可移动磁盘，打开此磁盘，在磁盘根目录新建一个名为ssh(无后缀)的空文件，安全移除并弹出SD卡。如果此SD卡工作在Linux环境下，在终端中执行df命令你可以看到一个30m左右的fat32分区，cd进入此分区所对应的挂载点，用<code>touch ssh</code>命令创建名为ssh的文件，卸载并弹出SD卡</p>
+</blockquote>
+</li>
+<li><p>给树莓派上电开机后，用数据线连接树莓派和手机，大部分手机可以在通知烂看到<code>正在通过USB充电</code>，代表连接成功</p>
+</li>
+<li><p>此时打开手机端的<code>USB网络共享</code>功能，再打开Network Scan，刷新后应该会在USB Network中看到一个带（ssh）标识的IP地址，这个就是树莓派的IP了，见下图</p>
+<p> <img src="http://ost0gzer5.bkt.clouddn.com/Screenshot_2017-08-08-21-53-13-680_com.bitsworking.networkscanner.app.png-sample"></p>
+</li>
+<li><p>得到树莓派的IP之后就离胜利就不远了，打开JuiceSSH新建连接，认证信息中的昵称可随便填，用户名和密码的默认值为pi和raspberry，然后通过ssh登录树莓派，此处就不赘述了</p>
+</li>
+<li><p>之后树莓派便可以通过手机的USB网络共享而访问外部网络了，更新软件，安装vncserver什么的都可以了</p>
+</li>
+</ol>
+<p>关于原理，这里摘自参考资料</p>
+<blockquote>
+<p>因为树莓派官方系统和安卓系统都是基于Linux内核，在Linux中，USB接口可以虚拟为有线网口，也就是说，用数据线连接树莓派和安卓手机，就相当于将两台电脑主机用网线连接一样，而通过”USB网络共享”这个功能，可以将手机虚拟为一个”路由器”，而让树莓派变成了一个”网络终端”，从而组建起一个微型的”局域网”。</p>
+</blockquote>
+<hr>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p><a target="_blank" rel="noopener" href="https://mlapp.cn/179.html">树莓派折腾记:纯手机+数据线连接树莓派</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%A0%91%E8%8E%93%E6%B4%BE-Raspberry-Pi/" rel="tag"># 树莓派 Raspberry Pi</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/07/09/%E6%A0%91%E8%8E%93%E6%B4%BEraspberry%E5%85%B3%E6%9C%BA%E5%92%8C%E9%87%8D%E5%90%AF%E5%91%BD%E4%BB%A4/" rel="prev" title="树莓派raspberry关机和重启命令">
+                  <i class="fa fa-angle-left"></i> 树莓派raspberry关机和重启命令
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/07/19/%E6%A0%91%E8%8E%93%E6%B4%BE%E5%8F%98%E8%BA%AB%E8%B7%AF%E7%94%B1%E5%99%A8/" rel="next" title="树莓派变身路由器">
+                  树莓派变身路由器 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Taoliq</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"taoliq","repo":"taoliq.github.io","client_id":"ab1c637bba57ea5c7624","client_secret":"7b04c62cdc056d62008182164c1dcd2dc99de2d0","admin_user":null,"distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"65a63053d7b98eea86d5a044aea1c9b4"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+</body>
+</html>

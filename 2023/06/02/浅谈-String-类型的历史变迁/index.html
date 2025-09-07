@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.25.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="在很多编程语言中，经常用 String 类型来表示字符串，用 Char 来表示字符类型；在以往的观念中，String 与 Char 数组 (字符数组) 是等价的，但随着计算机的发展以及编程语言的演进，这两者之间好像出现了一些细微的不同。这篇文章将向读者展示，Char 数组与 String 是如何从统一走向分离的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈 String 类型的历史变迁">
+<meta property="og:url" content="http://example.com/2023/06/02/%E6%B5%85%E8%B0%88-String-%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%8E%86%E5%8F%B2%E5%8F%98%E8%BF%81/index.html">
+<meta property="og:site_name" content="Liqiang&#39;s Blog">
+<meta property="og:description" content="在很多编程语言中，经常用 String 类型来表示字符串，用 Char 来表示字符类型；在以往的观念中，String 与 Char 数组 (字符数组) 是等价的，但随着计算机的发展以及编程语言的演进，这两者之间好像出现了一些细微的不同。这篇文章将向读者展示，Char 数组与 String 是如何从统一走向分离的。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/1685715591978.png">
+<meta property="og:image" content="http://example.com/1685715616023.png">
+<meta property="og:image" content="http://example.com/1685974161618.png">
+<meta property="og:image" content="http://example.com/1685974142352.png">
+<meta property="og:image" content="http://example.com/1685974115502.png">
+<meta property="og:image" content="http://example.com/1685974104352.png">
+<meta property="og:image" content="http://example.com/1685974097163.png">
+<meta property="og:image" content="http://example.com/1685974060180.png">
+<meta property="og:image" content="http://example.com/1685974045975.png">
+<meta property="article:published_time" content="2023-06-02T14:09:11.000Z">
+<meta property="article:modified_time" content="2025-09-06T07:28:09.262Z">
+<meta property="article:author" content="Taoliq">
+<meta property="article:tag" content="编程语言">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/1685715591978.png">
+
+
+<link rel="canonical" href="http://example.com/2023/06/02/%E6%B5%85%E8%B0%88-String-%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%8E%86%E5%8F%B2%E5%8F%98%E8%BF%81/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2023/06/02/%E6%B5%85%E8%B0%88-String-%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%8E%86%E5%8F%B2%E5%8F%98%E8%BF%81/","path":"2023/06/02/浅谈-String-类型的历史变迁/","title":"浅谈 String 类型的历史变迁"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>浅谈 String 类型的历史变迁 | Liqiang's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Liqiang's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8E%E6%95%B0%E6%95%B0%E5%BC%80%E5%A7%8B"><span class="nav-number">1.</span> <span class="nav-text">从数数开始</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">字符类型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Char-%E5%AD%97%E7%AC%A6"><span class="nav-number">3.</span> <span class="nav-text">Char &#x3D;&#x3D; 字符?</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B5%B0%E8%BF%9B%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="nav-number">4.</span> <span class="nav-text">走进字符串</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B7%B1%E5%85%A5%E5%AE%9E%E7%8E%B0%E4%B9%8B%E5%89%8D-%E2%80%94%E2%80%94-Unicode-%E7%BC%96%E7%A0%81"><span class="nav-number">5.</span> <span class="nav-text">深入实现之前 —— Unicode 编码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#String-%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%8E%86%E5%8F%B2%E5%8F%98%E8%BF%81"><span class="nav-number">6.</span> <span class="nav-text">String 类型的历史变迁</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ASCII-%E7%A0%81%EF%BC%8C-C-%E8%AF%AD%E8%A8%80"><span class="nav-number">6.1.</span> <span class="nav-text">ASCII 码， C 语言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Unicode%EF%BC%8C-UTF-16%EF%BC%8CJava-%E5%92%8C-C"><span class="nav-number">6.2.</span> <span class="nav-text">Unicode， UTF-16，Java 和 C#</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Unicode%EF%BC%8CUTF-8-%E5%92%8C%E6%9C%80%E8%BF%91%E7%9A%84%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80"><span class="nav-number">6.3.</span> <span class="nav-text">Unicode，UTF-8 和最近的编程语言</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#String-%E7%B1%BB%E5%9E%8B%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%80%A7%E8%83%BD"><span class="nav-number">7.</span> <span class="nav-text">String 类型的设计与性能</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Code-Point-Unaware-String"><span class="nav-number">8.</span> <span class="nav-text">Code Point Unaware String</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">9.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">10.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Taoliq</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/taoliq" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;taoliq" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:taolq@outlook.com" title="E-Mail → mailto:taolq@outlook.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/06/02/%E6%B5%85%E8%B0%88-String-%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%8E%86%E5%8F%B2%E5%8F%98%E8%BF%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Taoliq">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Liqiang's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="浅谈 String 类型的历史变迁 | Liqiang's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          浅谈 String 类型的历史变迁
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-06-02 22:09:11" itemprop="dateCreated datePublished" datetime="2023-06-02T22:09:11+08:00">2023-06-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-09-06 15:28:09" itemprop="dateModified" datetime="2025-09-06T15:28:09+08:00">2025-09-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>在很多编程语言中，经常用 String 类型来表示字符串，用 Char 来表示字符类型；在以往的观念中，String 与 Char 数组 (字符数组) 是等价的，但随着计算机的发展以及编程语言的演进，这两者之间好像出现了一些细微的不同。这篇文章将向读者展示，Char 数组与 String 是如何从统一走向分离的。</p>
+<span id="more"></span>
+
+<h1 id="从数数开始"><a href="#从数数开始" class="headerlink" title="从数数开始"></a>从数数开始</h1><p>先从一个简单的 Python 程序讲起，返回一个字符串的长度。</p>
+<p>输入数据如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hello world</span><br><span class="line">你好，世界</span><br><span class="line">café</span><br><span class="line">🙏🙏🏽🙏🏿</span><br><span class="line">👩‍👩‍👧‍👦</span><br></pre></td></tr></table></figure>
+
+<p>在笔者的环境中结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Python 3.8.0 (default, Dec  9 2021, 17:53:27)</span><br><span class="line">[GCC 8.4.0] on linux</span><br><span class="line">Type &quot;help&quot;, &quot;copyright&quot;, &quot;credits&quot; or &quot;license&quot; for more information.</span><br><span class="line">&gt;&gt;&gt; len(&quot;hello world&quot;)</span><br><span class="line">11</span><br><span class="line">&gt;&gt;&gt; len(&quot;你好，世界&quot;)</span><br><span class="line">5</span><br><span class="line">&gt;&gt;&gt; len(&quot;café&quot;)</span><br><span class="line">5</span><br><span class="line">&gt;&gt;&gt; len(&quot;🙏🙏🏽🙏🏿&quot;)</span><br><span class="line">5</span><br><span class="line">&gt;&gt;&gt; len(&quot;👩‍👩‍👧‍👦&quot;)</span><br><span class="line">7</span><br></pre></td></tr></table></figure>
+<p>按理说，<code>len()</code> 函数应该返回字符串包含的 “字符” 的个数，但是这里的 “字符” 与直觉上好像有一些出入。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>直觉上的长度</th>
+<th>py3 输出的长度</th>
+<th>相等与否</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>hello world</td>
+<td>11</td>
+<td>11</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>你好，世界</td>
+<td>5</td>
+<td>5</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>café</td>
+<td>4</td>
+<td>5</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>🙏🙏🏽🙏🏿</td>
+<td>3</td>
+<td>5</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>👩‍👩‍👧‍👦</td>
+<td>1</td>
+<td>7</td>
+<td>❌</td>
+</tr>
+</tbody></table>
+<p>发生什么事了📢📢📢</p>
+<p>到底是谁错了？人还是机器？</p>
+<blockquote>
+<p>机器永远是对的。——jyy</p>
+</blockquote>
+<p>py3 输出的长度表示的是什么意思呢？</p>
+<p><img src="/1685715591978.png"></p>
+<h1 id="字符类型"><a href="#字符类型" class="headerlink" title="字符类型"></a>字符类型</h1><p>为了回答前面的问题，我们需要了解一下字符类型，虽然在 Python 中没有独立的字符类型，但其他大多数编程语言中都有单独的字符类型，如 C#，Java，Rust，Julia 中的 Char，以及 Go 中的 rune 和 Swift 中的 Character；虽然都叫字符类型，但是由于一些原因，这些字符类型的实现并不一样，有的是 16 位有的是 32 位 (其原因会在后面说明) 。在比较现代的编程语言中，字符类型的实现多数为 32 位，我们就从 32 位字符类型开始讲起吧。</p>
+<p>注： 在后文中出现的 Char 或者是 Char 类型，均指代编程语言中的字符类型，由于 “字符” 一词存在歧义，故选择了 Char 这个词来指代。至于“字符”一词的歧义，也会在后文中展开说明。</p>
+<p>32 位字符类型基本都是用来表示 Unicode Scalar Value (Unicode 标量值)， 或者说 Unicode 中的 Code Point。</p>
+<p>首先， Unicode 是什么呢？——Unicode 标准 (The Unicode Standard) [1]，简单说就是一个 “字符表”，一种规则，给每个字符一个编号。</p>
+<p>可以类比于 ASCII 码，大写字母 “A” 的编号是十进制的 65。</p>
+<p>下方的截图来自于 Unicode 官网 [2]，可以看到图中列出了几个字符，每个字符的下方会有一个编号 (如 U+0669，十六进制) ，这个编号就称为 Code Point。</p>
+<p><img src="/1685715616023.png"></p>
+<p>目前 Unicode Code Point 编号达到了 21 位 (二进制) ，所以用 32 位来存储是完全够用的。</p>
+<p>32 位字符类型表示的就是这个编号，比如上图中的 U+0669。</p>
+<h1 id="Char-字符"><a href="#Char-字符" class="headerlink" title="Char &#x3D;&#x3D; 字符?"></a>Char &#x3D;&#x3D; 字符?</h1><table>
+<thead>
+<tr>
+<th></th>
+<th>直觉上的长度</th>
+<th>py3 输出的长度</th>
+<th>相等与否</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>hello world</td>
+<td>11</td>
+<td>11</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>你好，世界</td>
+<td>5</td>
+<td>5</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>café</td>
+<td>4</td>
+<td>5</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>🙏🙏🏽🙏🏿</td>
+<td>3</td>
+<td>5</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>👩‍👩‍👧‍👦</td>
+<td>1</td>
+<td>7</td>
+<td>❌</td>
+</tr>
+</tbody></table>
+<p>回到前面字符串长度的表格，现在我们可以回答之前提出的问题了，py3 输出的字符串长度，其含义是字符串中 Unicode Code Point 的个数 (感兴趣的读者可以自己验证，这里就忽略了) 。</p>
+<p>再来看左侧的 “直觉上的长度”，为了更准确地讲解，我们引入一个新概念，用户视角的字符 (User-perceived character) ，指符合人类直觉的字符，因为是从直觉的角度出发，没有明确的定义，比如一个“块块”，一个 emoji 表情 ⛄。“直觉上的长度” 含义就是 用户视角的字符 的个数。</p>
+<p>从这个表格中可以看到，有一些 “字符”，在人类视角是一个 (一个 用户视角的字符) ，但是在计算机的角度是由多个 Unicode Code Point 组成。</p>
+<p>很显然，一个用户视角的字符，可能需要多个 Unicode 字符 (Code Point) 来表示。比如这个表示家庭的 emoji，👨‍👩‍👧‍👦，实际上由七个 Unicode Code Point 组成，但是由前端渲染成了一个 “用户视角的字符”；或者这个 🙏🏿，由两个 Code Point 组成 (一个 🙏，外加一个表示肤色的 Code Point) 。</p>
+<p>更一般地讲，32 位 Char 类型无法表示全部的用户视角的字符，能表示的有英文、汉字、日语等；不能表示的有法语等小语种、部分组合而成的 emoji 👩👧。</p>
+<p>不少编程语言中都是用 Char 作为字符类型，久而久之便形成了 “Char &#x3D;&#x3D; 字符” 这样的假设，潜意识地认为字符类型可以表示任何用户角度的字符，但现在通过上面的几个例子，可以看到 Char 类型与用户视角的字符并不相同。</p>
+<p>这里建议读者把 32 位 Char 类型当作表示 Unicode Code Point 的类型，不再使用 “字符” 类型这个词。因为不论 “字符” 还是 “Character”，在计算机中都是含有歧义的词语；比如一个 “字符” 是指 8 位？16 位？还是 32 位？更或是“用户角度的字符”？而这些概念都有对应的指代更为明确的词语。</p>
+<p>“Char &#x3D;&#x3D; 字符” 的时代已经过去了，虽然 Char 依然表示字符类型，但却无法表示很多 “用户视角的字符”，欢迎来到全新的 Unicode 时代~</p>
+<p>类比计算机发展早期，比如在 C 语言中，一个 char (8 位) 可以表示 ASCII 字符；但在当今的时代，即使是 32 位的 Char，依然有很多用户视角的字符超出了其表示能力。</p>
+<p><strong>小结</strong></p>
+<ul>
+<li>很多用户角度的字符已经超出了 Unicode 字符的表示范围，即 32 位 Char 类型的表达能力。<br>“Char &#x3D;&#x3D; 字符” 假设，不再成立，或者在一定范围内成立。</li>
+<li>字符是一个很容易产生歧义的词，当谈及字符时候一定要小心 (指代不够明确，是用户角度的字符？Char 类型？32 位？16 位？8 位？)。</li>
+<li>Char 类型有可能误导使用者，其在部分场景够用，但是更复杂的场景会暴露其不足 (在后面的 Code Point Unaware String 章节会有进一步的讨论) 。</li>
+</ul>
+<h1 id="走进字符串"><a href="#走进字符串" class="headerlink" title="走进字符串"></a>走进字符串</h1><p>可以看到，即使是一个用户视角的字符，我们也可能需要一个字符串 (多个 Char 类型) 来表示。</p>
+<p>我们对字符串最直观的认识 —— Char 数组，这个直观认识不管从人类直觉还是从计算机发展都是很理所当然的。</p>
+<p>从人类直觉来说，字符串，字面意思，“字符” 的 “串”，使用代码来表示，自然而然会想到用 Char 数组。</p>
+<p>从笔者个人学习经历来说，笔者学的第一门编程语言是 C 语言，C 语言里面并没有单独的 String 类型，在 C 里面，字符串与 char 数组是等价的。</p>
+<p>在一些语言的 String 设计中，这种直觉也是 “行得通” 的，比如 Java、C#、Swift，其字符串的长度都表示 (该语言中) 字符类型的个数，对 String 索引操作得到的也是字符类型。</p>
+<p>但如果我们再扩大一下视角，来横向看一下各个编程语言中的 String 类型，我们会发现，“字符串是 Char 数组” 这个概念，好像并不统一。</p>
+<p><img src="/1685974161618.png"></p>
+<p>我们通过各个语言中 String 类型索引和长度的含义，以此来判断其 String 是否为 Char 数组。</p>
+<p>索引和长度的含义可能是语言中内置 Char 类型，此时 String 与 Char 数组无异，我们可以像操作数组一样操作 String；</p>
+<p>除此之外，索引和长度还可能是指 “字节”，二者的关系 —— 一个 Char 可以由一个多个字节组成 (更具体的关系在后面的编码章节会继续深入)，比较的语言和结果如下：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Swift</th>
+<th>Go</th>
+<th>Rust</th>
+<th>Julia</th>
+<th>Java</th>
+<th>C#</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>String 索引含义</td>
+<td>Character 类型</td>
+<td>byte</td>
+<td>byte</td>
+<td>byte</td>
+<td>Char 类型</td>
+<td>Char 类型</td>
+</tr>
+<tr>
+<td>String 是 Char 数组？</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody></table>
+<p>注：这里并不考察 String 与 Char 数组的转换，因为所有语言都支持这种操作。</p>
+<p>可以看到，这些语言都做出了不同的选择 (设计) ，设计者到底为什么做出决定，各个语言为何在 string 的概念上不尽相同。</p>
+<p><del>这一切的背后到底是道德的沦丧，还是人性的扭曲。</del></p>
+<p>仔细思考一下这个分类，其实是很粗糙的，同时也存在一些问题的，比如：</p>
+<ol>
+<li>不同语言中字符类型相同吗？C 语言中 char 是 8 位，Java 中是 16 位，Rust 中是 32 位，其他语言呢？基于不同的 char 类型比较得出的结论有意义吗？</li>
+<li>String 类型的属性依赖于另一个类型？假如改变某一个语言中字符类型的实现，那 String 的属性也跟着变了</li>
+</ol>
+<p>为了解释这些疑问，同时为了看到各语言中 String 类型更本质的区别，我们再进一步来看看 String 类型的实现。</p>
+<p><img src="/1685974142352.png"></p>
+<h1 id="深入实现之前-——-Unicode-编码"><a href="#深入实现之前-——-Unicode-编码" class="headerlink" title="深入实现之前 —— Unicode 编码"></a>深入实现之前 —— Unicode 编码</h1><p>在讨论 String 的实现之前，我们先简单讲解一下 Unicode 编码，读者可能之前听到过 UTF-8、UTF-16、UTF-32，这里会尽可能地从 high-level 进行讲解。</p>
+<p>首先我们从编码说起，一句话解释，编码就是将 Code Points 转化成二进制字节的过程；</p>
+<p><img src="/1685974115502.png"></p>
+<p>依然从老朋友 ASCII 码讲起，对于 ASCII 码而言，编码只有一种，直接将编号换算 (进制转换) 成二进制 (或者十六进制) 即可；<br>如：大写字母 “A” 的编号 65，编码后就是 0x41。</p>
+<p>基于这种直接进制转换的思想，我们便得到了名为 UTF-32 的编码方式 —— 直接将 Unicode Code Point 转换成 32 位的二进制字节即可；</p>
+<p>如下图中的 A 和 😀，分别换算成 00 00 00 41 和 00 01 F6 00，</p>
+<p>这种编码方式的缺点很明显 —— 浪费空间，对于常用的小编号 Code Point (字母和数字，在 ASCII 字符集内的字符) ，会存在前导零，这些前导零会浪费空间。</p>
+<p><img src="/1685974104352.png"></p>
+<p>为了解决 UTF-32 浪费空间的前导零，便有了变长编码 —— UTF-8。</p>
+<p>读者只需要理解两种编码的由来和特点即可，至于如何具体编码，这篇文章不会包含这部分内容。</p>
+<p><img src="/1685974097163.png"></p>
+<p>在上图中可以看到，Code Point 经过 UTF-8 编码得到的字节从一个到四个不等。</p>
+<p>再引入一个概念——Code Unit  (编码单元) ，指的是编码后的基本单元的长度，UTF-32 的编码单元是 32 位，4 个字节，编码名称中的 32 指的就是编码单元的长度；</p>
+<p>UTF-8 同理，编码后的基本单元长度是 8 位，一个字节。</p>
+<p>关于 UTF-16，从现在的角度来看，既有前导零浪费空间的问题 (下图中的 A 字符) ，又是变长编码 (变长编码的缺点在后面会讨论到) ，</p>
+<p>这东西可以说完全是 “时代的眼泪”，UTF-16 的设计初衷是 “定长编码”，因为早期的 Unicode 标准犯了一个历史错误——过早承诺了 Code Point 可以用 16 位存下。</p>
+<p>但随着 Unicode 标准的演进，最初的设计优点 (定长编码) 不复存在，成了只留下了缺点 (浪费空间和变长) 的编码方案。</p>
+<p>虽然不在本文的关注范围内，但是如果遇到文本乱码，那基本上是编码问题了。</p>
+<p>你无法在不知道编码的情况下解决乱码的问题。</p>
+<blockquote>
+<p>没有编码的字符串，毫无意义！——马主任</p>
+</blockquote>
+<p><img src="/1685974060180.png"></p>
+<p>在了解了 Unicode 和相关编码之后，再来回头看一下各种语言的 Char 和 String 类型的实现：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Swift</th>
+<th>Go</th>
+<th>Rust</th>
+<th>Julia</th>
+<th>Java</th>
+<th>C#</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>String 实现编码</td>
+<td>UTF-16 -&gt; UTF-8</td>
+<td>UTF-8</td>
+<td>UTF-8</td>
+<td>UTF-8</td>
+<td>UTF-16</td>
+<td>UTF-16</td>
+</tr>
+<tr>
+<td>String 索引含义</td>
+<td>Character 类型</td>
+<td>byte</td>
+<td>byte</td>
+<td>byte</td>
+<td>Char 类型</td>
+<td>Char 类型</td>
+</tr>
+<tr>
+<td>字符类型</td>
+<td>User-perceived character</td>
+<td>32 位</td>
+<td>32 位</td>
+<td>32 位</td>
+<td>16 位</td>
+<td>16 位</td>
+</tr>
+<tr>
+<td>字符类型是用户角度的字符？</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>String 是编码单元数组？</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody></table>
+<p>可以很明显的看到，首先是 String 类型实现上的不同——有的语言采用了 UTF-8 编码，有的采用了 UTF-16。</p>
+<p>其次，连 Char 类型的实现也不一样，Swift 中的 Character 类型，其抽象程度是最高的，可以直接用来表示用户角度的字符；比如需要 7 个 Code Point 才能表示的一家子 👨‍👩‍👧‍👦，在 Swift 中完全可以用一个 Character 类型的变量存下。</p>
+<p>其它语言中的 Char 类型有 32 位的也有 16 位的，这两种实现中只有 32 位的 Char 可以表示 Unicode Code Point，而 16 位 Char 甚至连一个 Code Point 都无法表示，要知道，Code Point 可是 Unicode 标准中最小的带有语义的单元。</p>
+<p>编程语言中各不相同的 String 和 Char 类型的设计，是否存在统一的视角进行解读？</p>
+<h1 id="String-类型的历史变迁"><a href="#String-类型的历史变迁" class="headerlink" title="String 类型的历史变迁"></a>String 类型的历史变迁</h1><p>下面，从计算机发展的角度来理解一下各语言的设计初衷。</p>
+<h2 id="ASCII-码，-C-语言"><a href="#ASCII-码，-C-语言" class="headerlink" title="ASCII 码， C 语言"></a>ASCII 码， C 语言</h2><p>计算机早期处理的自然语言字符很有限，使用 ASCII 编码就能装下，对于字符串和字符的概念也没有明确的区分。</p>
+<p>比如在 C 语言中，使用 8 位的 Char 类型表示 ASCII 字符，而字符串也自然而然地使用了 char 数组。</p>
+<p>从这里开始慢慢诞生了一个假设或者说是潜意识的习惯 —— “一个 Char 表示一个字符”，很显然，这里需要限定是 8 位 Char 和 ASCII 码字符。</p>
+<h2 id="Unicode，-UTF-16，Java-和-C"><a href="#Unicode，-UTF-16，Java-和-C" class="headerlink" title="Unicode， UTF-16，Java 和 C#"></a>Unicode， UTF-16，Java 和 C#</h2><p>随着计算机的发展，出现了 Unicode 来统一人类的语言的编码，但是早期的 Unicode 犯了一个 历史性错误——承诺 Unicode 字符可以用 16 位存下。</p>
+<p>与此同时第一批支持 Unicode 的 Java 和 windows 都成了受害者——选择了 UTF-16 编码，但这个编码延续了以前的“习惯” —— “一个 Char 依然能表示一个字符”，只不过这里的 Char 变成了 16 位，字符变成了早期 Unicode 字符集里的字符。</p>
+<p>这个时期的编程语言里也出现了独立的数据类型 String 来表示字符串，幸运的是，在 UTF-16 编码下，String 依然可以视作 Char 数组，因为 UTF-16 编码中每个编码单元都是 16 位，这些语言中的 Char 也从以前语言中的 8 位变成了 16 位。</p>
+<h2 id="Unicode，UTF-8-和最近的编程语言"><a href="#Unicode，UTF-8-和最近的编程语言" class="headerlink" title="Unicode，UTF-8 和最近的编程语言"></a>Unicode，UTF-8 和最近的编程语言</h2><p>随着 Unicode 的进一步发展，标准内的字符集已经无法用 16 位装下了，需要 32 位才能表示一个 Unicode 编码的字符。</p>
+<p>甚至还出现了一些组合字符或者修饰字符，甚至有些自然语言里无法清晰地定义 “字符” 这个概念。</p>
+<p>这时候即使是能够表示 Unicode 编码字符的 32 位 Char，也不能表示用户角度的字符了。</p>
+<p>此时上述“习惯” —— “Char &#x3D;&#x3D; 字符”已经不成立了，与此同时出现了 UTF-8 的编码方式，该编码方式被大量的网站和协议，工具等采用，采用 UTF-16 实现 String 的编程语言开始产生新的问题：</p>
+<ol>
+<li>虽然 String 依然是 Char 数组，但这里的 16 位 Char 表示能力已经远低于后面语言中的 32 位 Char 了，甚至一些汉字和 emoji 需要两个 16 位 Char 才可以表示。</li>
+<li>丢弃假设“Char &#x3D;&#x3D; 字符”，String 不再视作 Char 数组，如 Go、Rust、Julia。这些语言中，不存在 String 到 Char 的抽象开销，由此带来了高效的字符串处理效率，但是需要用户先打破自己对字符串的传统认知</li>
+</ol>
+<h1 id="String-类型的设计与性能"><a href="#String-类型的设计与性能" class="headerlink" title="String 类型的设计与性能"></a>String 类型的设计与性能</h1><p>说完了比较 high-level，比较抽象的设计层面，我们再来关注一下更具体的东西——性能，看看 String 的设计与性能会存在什么样的联系。</p>
+<p>首先补充两个背景知识：</p>
+<ul>
+<li>UTF-8 已成为事实上的标准。</li>
+<li>变长编码带来的 Code Point 抽象层开销。</li>
+</ul>
+<p>这两条背景知识刚好对应着 String 性能的两个维度——外部和内部：</p>
+<ul>
+<li>String 外部的性能 (与其他库或者接口操作) ，String 实现采用非 UTF-8 编码时，会在 String 编解码时产生开销 (如 Java 和 C#) 。</li>
+<li>String 内部的性能 (自身操作) ，比如查找，切片等操作，String 抽象成非 “编码单元” 数组时，由于多了一层抽象层 (编码索引和字符索引之间的转换) ，在 String 自身操作时会产生性能问题 (如 Swift) 。</li>
+</ul>
+<p>举例说明 UTF-8 变长编码索引 Code Point 时的性能开销：</p>
+<p><img src="/1685974045975.png"></p>
+<p>比如，如果我们想得到汉字“阳”的字符类型索引，由于前面的字符 (字母标点和汉字) 对应的编码字节都是不确定的，所以需要从头开始计算，这样一个 O(N) 的操作对于字符串这种准基本类型代价是很高的。</p>
+<p>再来定性分析一下各语言 String 类型的性能：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Swift</th>
+<th>Go</th>
+<th>Rust</th>
+<th>Julia</th>
+<th>Java</th>
+<th>C#</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>String 是编码单元数组？</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>字符串操作开销</td>
+<td>有</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+</tr>
+<tr>
+<td>String 实现编码</td>
+<td>UTF-8</td>
+<td>UTF-8</td>
+<td>UTF-8</td>
+<td>UTF-8</td>
+<td>UTF-16</td>
+<td>UTF-16</td>
+</tr>
+<tr>
+<td>API 间编解码开销</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+<td>有</td>
+<td>有</td>
+</tr>
+</tbody></table>
+<p>继续具体地看一下各个语言的 String 类型：</p>
+<p>Swift</p>
+<p>该语言中的 Character 抽象能力最强，可以表示用户角度的字符，其 String 类型的长度也是符合人类直觉的 “字符串” 的长度；但是由于 Character 这层抽象层，不仅在使用上带来不便，为什么 Swift 的 String 这么难用 [3]，性能也会受影响，Swift String 性能问题) [4]。</p>
+<p>Java</p>
+<p>在 Java 18 中，各种 API 已经默认使用了 UTF-8 编码，但是使用 UTF-16 实现的 String 不可避免的会产生编解码的开销；与此同时，由于 16 位 Char 表达能力的缺陷，在 String 类型的 API 中除了 Char 相关的，也有 Code Point 相关的，如 CharAt (int index) [5] 和 codePointAt (int index) [6]。</p>
+<p>C#</p>
+<p>不光有 16 位的 Char 类型，还有 32 位的 Rune 类型。</p>
+<p>(一点吐槽，Java 设计 UTF-16 String 是由于 Unicode 标准的历史错误，但是 C# 的时期是可以避免这点的，为什么也栽了跟头呢？)</p>
+<p>虽然 C# String 实现和微软自家生态都是基于 UTF-16，但微软官方也在提倡采用 UTF-8 编码，Use the Windows UTF-8 code page [7]。</p>
+<p>Go，Rust，Julia</p>
+<p>基于 UTF-8 编码，无额外抽象层的 String 类型，在性能上看不到明显短板，唯一可能让人感到违背直觉的——无法按照 char 来操作，接下来我们就来讲解一下。</p>
+<h1 id="Code-Point-Unaware-String"><a href="#Code-Point-Unaware-String" class="headerlink" title="Code Point Unaware String"></a>Code Point Unaware String</h1><p>比较现代的语言都选择了 UTF-8 实现的 string，性能上可以看到两方面都没有劣势，唯一可能让人感到违背直觉的——无法按照 char 来操作，更准确的说法是，Code Point Unaware String，在网上也可以经常看到一些讨论，如 what if strings were Code Point aware? [8] on Rust，Indexing strings by Unicode code point instead of code unit? [9] on Julia。</p>
+<p>那么这个设计的初衷是什么呢，即使不去设计编程语言，作为语言 (库) 的使用者又该如何理解呢？</p>
+<p>首先，从实现的角度来说，变长的 UTF-8 编码不适合 “直接” 抽象成 Code Point 数组 (可以参考 Swift 的抽象层导致的性能问题) ；</p>
+<p>其次，在当今的软件中，索引 Code Point 并不像大家直觉中那么重要，绝大部分场景 Code Point 都不能满足需求。</p>
+<p>从实际的应用软件角度来考虑：</p>
+<ul>
+<li>鼠标移动和选定——从上面的例子可以发现，用户角度的字符并不是由 Char 一一对应的，在这种情况下，使用到的基本单位是字素 (grapheme)</li>
+<li>文本查找和替换的场景——类似下方背景中性能问题提到的例子，需要先通过遍历或者搜索得到字符串的位置，再通过这个位置来操作，而这个位置是字节还是 Code Point 的并不会影响功能，但是会影响性能 (后者需要额外的计算)</li>
+<li>限制长度的场景——如输入字符串，协议传输，数据库等；更关心字符串编码后的长度，即字节数，使用到的基本单位是 (code unit)</li>
+<li>在屏幕上渲染 “字符”——同样地，与 Char 无关，一个 Char 占据多少列是不确定的，需要由渲染引擎决</li>
+</ul>
+<p>最后一点，不是那么明显但是影响深远，Code Point 这层抽象不是一个 “正确” 的抽象。</p>
+<p>Code Point 在简单的场景中使用看起来不会有问题，但一旦问题变复杂，程序员可能意识不到是编程语言的数据类型的问题；Code Point 作为一个不准确的抽象，如果仅指望通过它来进行简化，无异于掩盖 Unicode 的复杂性，而这种行为反倒会埋下潜在的隐患。</p>
+<p>由此可见，该抽象层可能会误导程序员，掩盖了所处理问题的复杂性。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>从编程语言的历史演进中可以看到，String 可以说是始于 Char 数组，但随着处理问题越来越复杂 (源于人类语言的复杂性) ，在一些现代语言中，String 已经不再作为 Char 数组，而是独立成单独的类型；出于不同的目的或者是原因，各个编程语言中的字符类型和 String 类型也存在着这样或那样的差异。</p>
+<p>最后对阅读到这里的读者表示感谢，希望读者看到这里能够有所启发，有所收获。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p>[1] The Unicode Standard - <a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Unicode">https://zh.wikipedia.org/wiki/Unicode</a></p>
+<p>[2] Unicode 官网 - <a target="_blank" rel="noopener" href="https://home.unicode.org/">https://home.unicode.org/</a> </p>
+<p>[3] Swift 的字符串为什么这么难用？- <a target="_blank" rel="noopener" href="https://kemchenj.github.io/2019-10-07/">https://kemchenj.github.io/2019-10-07/</a> </p>
+<p>[4] Swift String 性能问题 - <a target="_blank" rel="noopener" href="https://blog.jerrychu.top/2020/11/29/Swift%E5%AD%97%E7%AC%A6%E4%B8%B2/">https://blog.jerrychu.top/2020/11/29/Swift%E5%AD%97%E7%AC%A6%E4%B8%B2/</a></p>
+<p>[5] Java charAt API- <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/18/docs/api/java.base/java/lang/String.html#charAt(int)">https://docs.oracle.com/en/java/javase/18/docs/api/java.base/java/lang/String.html#charAt(int)</a></p>
+<p>[5] Java codePointAt API - <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/18/docs/api/java.base/java/lang/String.html#codePointAt(int)">https://docs.oracle.com/en/java/javase/18/docs/api/java.base/java/lang/String.html#codePointAt(int)</a></p>
+<p>[6] Use the Windows UTF-8 code page - <a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/windows/apps/design/globalizing/use-utf8-code-page">https://learn.microsoft.com/en-us/windows/apps/design/globalizing/use-utf8-code-page</a></p>
+<p>[7] what if strings were Code Point aware? - <a target="_blank" rel="noopener" href="https://internals.rust-lang.org/t/what-if-strings-were-code-point-aware/18043">https://internals.rust-lang.org/t/what-if-strings-were-code-point-aware/18043</a></p>
+<p>[8] what if strings were Code Point aware? - <a target="_blank" rel="noopener" href="https://discourse.julialang.org/t/indexing-strings-by-unicode-code-point-instead-of-code-unit/55248">https://discourse.julialang.org/t/indexing-strings-by-unicode-code-point-instead-of-code-unit/55248</a></p>
+<p>[9] Indexing strings by Unicode code point instead of code unit? - <a target="_blank" rel="noopener" href="https://discourse.julialang.org/t/indexing-strings-by-unicode-code-point-instead-of-code-unit/55248">https://discourse.julialang.org/t/indexing-strings-by-unicode-code-point-instead-of-code-unit/55248</a></p>
+<p>[10] UTF-8 Everywhere - <a target="_blank" rel="noopener" href="https://utf8everywhere.org/">https://utf8everywhere.org/</a></p>
+<p>[11] Dark corners of Unicode - <a target="_blank" rel="noopener" href="https://eev.ee/blog/2015/09/12/dark-corners-of-unicode/">https://eev.ee/blog/2015/09/12/dark-corners-of-unicode/</a></p>
+<p>[12] Let’s Stop Ascribing Meaning to Code Points - <a target="_blank" rel="noopener" href="https://manishearth.github.io/blog/2017/01/14/stop-ascribing-meaning-to-unicode-code-points/#fn:2">https://manishearth.github.io/blog/2017/01/14/stop-ascribing-meaning-to-unicode-code-points/#fn:2</a></p>
+<p>[13] Breaking Our Latin-1 Assumptions - <a target="_blank" rel="noopener" href="https://manishearth.github.io/blog/2017/01/15/breaking-our-latin-1-assumptions/#fn:4">https://manishearth.github.io/blog/2017/01/15/breaking-our-latin-1-assumptions/#fn:4</a></p>
+<p>[14] twitter - how twitter Counting characters - <a target="_blank" rel="noopener" href="https://developer.twitter.com/en/docs/counting-characters">https://developer.twitter.com/en/docs/counting-characters</a></p>
+<p>[15] LINE - The 7 Ways of Counting Characters - <a target="_blank" rel="noopener" href="https://engineering.linecorp.com/en/blog/the-7-ways-of-counting-characters/">https://engineering.linecorp.com/en/blog/the-7-ways-of-counting-characters/</a></p>
+<p>[16] reddit - UFT8 and String? Why Vecu8? - <a target="_blank" rel="noopener" href="https://www.reddit.com/r/rust/comments/2b08l5/uft8_and_string_why_vecu8/">https://www.reddit.com/r/rust/comments/2b08l5/uft8_and_string_why_vecu8/</a> </p>
+<p>[17] Should UTF-16 be considered harmful - <a target="_blank" rel="noopener" href="http://programmers.stackexchange.com/questions/102205/should-utf-16-be-considered-harmful">http://programmers.stackexchange.com/questions/102205/should-utf-16-be-considered-harmful</a></p>
+<p>[18] 快速搞懂🔍Unicode，ASCII，UTF-8，代码点，编码… - <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1kD4y1z7ft/">https://www.bilibili.com/video/BV1kD4y1z7ft/</a></p>
+<p>[19] The importance of language-level abstract Unicode strings - <a target="_blank" rel="noopener" href="https://unspecified.wordpress.com/2012/04/19/the-importance-of-language-level-abstract-unicode-strings/">https://unspecified.wordpress.com/2012/04/19/the-importance-of-language-level-abstract-unicode-strings/</a></p>
+<p>[20] What Every Programmer Absolutely, Positively Needs To Know About Encodings And Character Sets To Work With Text - <a target="_blank" rel="noopener" href="https://kunststube.net/encoding/">https://kunststube.net/encoding/</a></p>
+<p>[21] UTF-8 String Indexing Strategies - <a target="_blank" rel="noopener" href="https://nullprogram.com/blog/2019/05/29/">https://nullprogram.com/blog/2019/05/29/</a></p>
+<p>[22] Popularity of text encodings - Wikipedia - <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Popularity_of_text_encodings">https://en.wikipedia.org/wiki/Popularity_of_text_encodings</a></p>
+<p>[23] UTF-8 encoded strings - <a target="_blank" rel="noopener" href="https://www.reddit.com/r/ProgrammingLanguages/comments/11j56u0/utf8_encoded_strings/">https://www.reddit.com/r/ProgrammingLanguages/comments/11j56u0/utf8_encoded_strings/</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/" rel="tag"># 编程语言</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/03/31/%E5%90%91LLVM%E5%90%88%E5%B9%B6%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AApatch/" rel="prev" title="向LLVM合并的第一个patch">
+                  <i class="fa fa-angle-left"></i> 向LLVM合并的第一个patch
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Taoliq</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"taoliq","repo":"taoliq.github.io","client_id":"ab1c637bba57ea5c7624","client_secret":"7b04c62cdc056d62008182164c1dcd2dc99de2d0","admin_user":null,"distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"a6c574b184ebec7543ca60d2a9b0d3ee"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+</body>
+</html>
